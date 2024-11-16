@@ -9,7 +9,7 @@ import {
   import React, { useState } from "react";
   import Papa from "papaparse";
   import firebase from "firebase/compat/app";
-import "firebase/firestore";
+  import "firebase/firestore";
   import { firestore } from "./firebase"; // Replace with your Firebase configuration
   
   const BookUpload = () => {
@@ -51,13 +51,23 @@ import "firebase/firestore";
         header: true,
         skipEmptyLines: true,
         complete: async (result) => {
-          console.log("Parsed data:", result.data); // Log parsed data for debugging
-  
           const books = result.data;
           const existingCodes = new Set(); // Set to track unique codes
           const batch = firestore.batch(); // Firestore batch operation
+          const existingISBNs = new Set(); // Track existing ISBNs
+          let skippedBooks = 0;
   
           try {
+            // Step 1: Fetch all existing ISBNs from Firestore
+            const snapshot = await firestore.collection("books").get();
+            snapshot.forEach((doc) => {
+              const data = doc.data();
+              if (data.ISBN) existingISBNs.add(data.ISBN);
+            });
+  
+            console.log("Existing ISBNs in Firestore:", Array.from(existingISBNs));
+  
+            // Step 2: Process each book in the CSV
             for (const [index, book] of books.entries()) {
               console.log(`Processing book #${index + 1}:`, book);
   
@@ -70,9 +80,21 @@ import "firebase/firestore";
                 );
               }
   
+              // Check for duplicate ISBN
+              if (existingISBNs.has(book.ISBN.trim())) {
+                console.warn(
+                  `Skipping duplicate ISBN (${book.ISBN}) for book #${index + 1}`
+                );
+                skippedBooks++;
+                continue;
+              }
+  
               // Prepare Firestore document
               const bookRef = firestore.collection("books").doc();
-              const code = await generateUniqueCode(book.type, existingCodes);
+              const code = await generateUniqueCode(
+                book.type.trim(),
+                existingCodes
+              );
   
               const bookData = {
                 ISBN: book.ISBN.trim(),
@@ -96,11 +118,14 @@ import "firebase/firestore";
   
               console.log(`Book data prepared for Firestore:`, bookData);
               batch.set(bookRef, bookData);
+              existingISBNs.add(book.ISBN.trim()); // Add ISBN to local set
             }
   
-            // Commit batch
+            // Step 3: Commit batch
             await batch.commit();
-            setSuccessMessage("Books uploaded successfully!");
+            setSuccessMessage(
+              `Books uploaded successfully! ${skippedBooks} duplicates skipped.`
+            );
             setOpenSnackbar(true);
           } catch (err) {
             console.error("Error during upload:", err.message);
@@ -129,8 +154,16 @@ import "firebase/firestore";
           Upload Books via CSV
         </Typography>
   
-        <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-          <Alert onClose={handleCloseSnackbar} severity={error ? "error" : "success"} sx={{ width: "100%" }}>
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={error ? "error" : "success"}
+            sx={{ width: "100%" }}
+          >
             {error || successMessage}
           </Alert>
         </Snackbar>
@@ -161,3 +194,4 @@ import "firebase/firestore";
   };
   
   export default BookUpload;
+  

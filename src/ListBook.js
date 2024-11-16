@@ -3,10 +3,11 @@ import {
   Box,
   Button,
   Container,
-  FormControl,
-  MenuItem,
-  Modal,
-  Select,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Table,
   TableBody,
   TableCell,
@@ -29,6 +30,8 @@ const BookList = () => {
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [page, setPage] = useState(0); // Current page for pagination
   const [rowsPerPage, setRowsPerPage] = useState(10); // Number of rows per page
+  const [openDialog, setOpenDialog] = useState(false); // Delete confirmation dialog
+  const [selectedBookId, setSelectedBookId] = useState(null); // ID of book to delete
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -79,16 +82,39 @@ const BookList = () => {
     navigate("/add-book"); // Redirect to add book page
   };
 
+  const handleUploadBooks = () => {
+    navigate("/add-book-csv"); // Redirect to CSV book upload page
+  };
+
   const handleEditBook = (id) => {
     navigate(`/edit-book/${id}`); // Redirect to edit book page with book ID
   };
 
-  const handleDeleteBook = async (id) => {
+  const handleDeleteDialogOpen = (id) => {
+    setSelectedBookId(id); // Set the selected book ID
+    setOpenDialog(true); // Open confirmation dialog
+  };
+
+  const handleDeleteDialogClose = () => {
+    setOpenDialog(false); // Close confirmation dialog
+    setSelectedBookId(null); // Reset selected book ID
+  };
+
+  const handleDeleteBook = async () => {
+    if (!selectedBookId) return;
+
     try {
-      await firestore.collection("books").doc(id).delete();
-      setBooks((prevBooks) => prevBooks.filter((book) => book.id !== id));
+      await firestore.collection("books").doc(selectedBookId).delete();
+      setBooks((prevBooks) =>
+        prevBooks.filter((book) => book.id !== selectedBookId)
+      );
+      setFilteredBooks((prevBooks) =>
+        prevBooks.filter((book) => book.id !== selectedBookId)
+      );
     } catch (error) {
       console.error("Error deleting book:", error);
+    } finally {
+      handleDeleteDialogClose();
     }
   };
 
@@ -111,13 +137,19 @@ const BookList = () => {
           fullWidth
           sx={{ maxWidth: 300 }}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleAddNewBook}
-        >
-          Add New Book
-        </Button>
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddNewBook}
+            sx={{ marginRight: 1 }}
+          >
+            Add New Book
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={handleUploadBooks}>
+            Upload via CSV
+          </Button>
+        </Box>
       </Box>
       <TableContainer sx={{ border: "1px solid #ddd", borderRadius: "8px" }}>
         <Table>
@@ -153,7 +185,7 @@ const BookList = () => {
                       size="small"
                       variant="outlined"
                       color="error"
-                      onClick={() => handleDeleteBook(book.id)}
+                      onClick={() => handleDeleteDialogOpen(book.id)}
                     >
                       Delete
                     </Button>
@@ -163,7 +195,7 @@ const BookList = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      
+
       <TablePagination
         component="div"
         count={filteredBooks.length}
@@ -174,6 +206,29 @@ const BookList = () => {
         rowsPerPageOptions={[5, 10, 20]}
         sx={{ marginTop: 2 }}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleDeleteDialogClose}
+        aria-labelledby="delete-dialog-title"
+      >
+        <DialogTitle id="delete-dialog-title">Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this book? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteDialogClose} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteBook} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
