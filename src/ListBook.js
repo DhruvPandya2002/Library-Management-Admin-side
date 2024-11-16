@@ -3,6 +3,10 @@ import {
   Box,
   Button,
   Container,
+  FormControl,
+  MenuItem,
+  Modal,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -12,21 +16,23 @@ import {
   TableRow,
   TextField,
   Typography,
+  useTheme,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { firestore } from "./firebase";
 import { useNavigate } from "react-router-dom";
-import Papa from "papaparse"; // Install using `npm install papaparse`
 
 const BookList = () => {
+  const theme = useTheme();
   const [books, setBooks] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [filteredBooks, setFilteredBooks] = useState([]);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [page, setPage] = useState(0); // Current page for pagination
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Number of rows per page
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Fetch books from Firestore
     const fetchBooks = async () => {
       try {
         const snapshot = await firestore.collection("books").get();
@@ -45,6 +51,7 @@ const BookList = () => {
   }, []);
 
   useEffect(() => {
+    // Filter books based on search input
     const searchTerm = searchInput.toLowerCase();
     const results = books.filter(
       (book) =>
@@ -69,11 +76,11 @@ const BookList = () => {
   };
 
   const handleAddNewBook = () => {
-    navigate("/add-book");
+    navigate("/add-book"); // Redirect to add book page
   };
 
   const handleEditBook = (id) => {
-    navigate(`/edit-book/${id}`);
+    navigate(`/edit-book/${id}`); // Redirect to edit book page with book ID
   };
 
   const handleDeleteBook = async (id) => {
@@ -82,53 +89,6 @@ const BookList = () => {
       setBooks((prevBooks) => prevBooks.filter((book) => book.id !== id));
     } catch (error) {
       console.error("Error deleting book:", error);
-    }
-  };
-
-  const handleCSVUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      Papa.parse(file, {
-        header: true, // Assumes the first row contains column names
-        skipEmptyLines: true,
-        complete: async (results) => {
-          try {
-            const data = results.data;
-
-            // Add each book to Firestore
-            const batch = firestore.batch(); // Use batch for efficiency
-            data.forEach((book) => {
-              const docRef = firestore.collection("books").doc(); // Auto-generate an ID
-              batch.set(docRef, {
-                title: book.title,
-                author: book.author,
-                publisher: book.publisher,
-                tags: book.tags?.split(",").map((tag) => tag.trim()) || [],
-                isbnCode: book.isbnCode,
-                code: book.code,
-                type: book.type,
-                category: book.category,
-                imageUrl: book.imageUrl,
-                brand: book.brand,
-                isbn10: book.isbn10,
-                sellerName: book.sellerName,
-                createdAt: new Date(),
-              });
-            });
-
-            await batch.commit();
-            alert("Books added successfully!");
-            setBooks((prevBooks) => [...prevBooks, ...data]);
-          } catch (error) {
-            console.error("Error uploading CSV data:", error);
-            alert("Failed to upload CSV data.");
-          }
-        },
-        error: (error) => {
-          console.error("Error parsing CSV:", error);
-          alert("Error parsing CSV file.");
-        },
-      });
     }
   };
 
@@ -151,29 +111,13 @@ const BookList = () => {
           fullWidth
           sx={{ maxWidth: 300 }}
         />
-        <Box>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddNewBook}
-            sx={{ marginRight: 2 }}
-          >
-            Add New Book
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            component="label"
-          >
-            Upload CSV
-            <input
-              type="file"
-              hidden
-              accept=".csv"
-              onChange={handleCSVUpload}
-            />
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAddNewBook}
+        >
+          Add New Book
+        </Button>
       </Box>
       <TableContainer sx={{ border: "1px solid #ddd", borderRadius: "8px" }}>
         <Table>
@@ -219,7 +163,7 @@ const BookList = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
+      
       <TablePagination
         component="div"
         count={filteredBooks.length}

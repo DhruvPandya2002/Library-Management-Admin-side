@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import {
   Alert,
   Box,
@@ -11,35 +10,35 @@ import {
   TextField,
   Typography,
   Autocomplete,
-  Grid,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import Grid from "@mui/material/Grid2";
+import { useNavigate, useLocation, useParams } from "react-router-dom"; // for redirection and params
 import firebase from "firebase/compat/app";
 import "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import { firestore } from "./firebase"; // Replace with your Firebase configuration
 
 const BookForm = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // Retrieve book ID from URL if updating
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // State for new fields
-  const [isbn10, setIsbn10] = useState("");
-  const [brand, setBrand] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [sellerName, setSellerName] = useState("");
-  const [categories, setCategories] = useState("");
-  const [tags, setTags] = useState("");
-
-  // State for existing fields
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [url, setUrl] = useState("");
   const [publisher, setPublisher] = useState("");
+  const [tags, setTags] = useState("");
+  const [order, setOrder] = useState("");
+  const [content, setContent] = useState("");
   const [code, setCode] = useState("");
   const [isbnCode, setIsbnCode] = useState("");
+  const [newFlag, setNewFlag] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedType, setSelectedType] = useState("");
-
   const [authorOptions, setAuthorOptions] = useState([]);
   const [publisherOptions, setPublisherOptions] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
@@ -48,7 +47,7 @@ const BookForm = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  // Fetch options and book details
+  // Fetch options and book details on component mount
   useEffect(() => {
     const fetchOptions = async () => {
       try {
@@ -57,10 +56,10 @@ const BookForm = () => {
         const categoriesSnapshot = await firestore.collection("categories").get();
         const typesSnapshot = await firestore.collection("types").get();
 
-        setAuthorOptions(authorsSnapshot.docs.map((doc) => doc.data()));
-        setPublisherOptions(publishersSnapshot.docs.map((doc) => doc.data()));
-        setCategoryList(categoriesSnapshot.docs.map((doc) => doc.data()));
-        setTypeList(typesSnapshot.docs.map((doc) => doc.data()));
+        setAuthorOptions(authorsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        setPublisherOptions(publishersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        setCategoryList(categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        setTypeList(typesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
       } catch (err) {
         console.error("Error fetching options:", err);
       }
@@ -72,18 +71,16 @@ const BookForm = () => {
           const doc = await firestore.collection("books").doc(id).get();
           if (doc.exists) {
             const data = doc.data();
-            setIsbn10(data.isbn10 || "");
-            setBrand(data.brand || "");
-            setImageUrl(data.image_url || "");
-            setSellerName(data.seller_name || "");
-            setCategories(data.categories?.join(", ") || "");
-            setTags(data.tags?.join(", ") || "");
             setTitle(data.title || "");
             setAuthor(data.author || "");
             setUrl(data.url || "");
             setPublisher(data.publisher || "");
+            setTags(data.tags?.join(", ") || "");
+            setOrder(data.order || "");
+            setContent(data.content || "");
             setCode(data.code || "");
             setIsbnCode(data.isbnCode || "");
+            setNewFlag(data.newFlag || false);
             setSelectedCategory(data.category || "");
             setSelectedType(data.type || "");
           }
@@ -100,6 +97,7 @@ const BookForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Basic validation
     if (!title || !selectedCategory) {
       setError("Please fill in all required fields.");
       setOpenSnackbar(true);
@@ -107,17 +105,13 @@ const BookForm = () => {
     }
 
     try {
+      const tagsArray = tags.split(",").map((tag) => tag.trim().toLowerCase());
       const bookData = {
-        isbn10,
-        brand,
-        image_url: imageUrl,
-        seller_name: sellerName,
-        categories: categories.split(",").map((category) => category.trim()),
-        tags: tags.split(",").map((tag) => tag.trim()),
         title,
         author,
         url,
         publisher,
+        tags: tagsArray,
         code,
         isbnCode,
         category: selectedCategory,
@@ -126,16 +120,18 @@ const BookForm = () => {
       };
 
       if (id) {
+        // Update book
         await firestore.collection("books").doc(id).update(bookData);
         setSuccessMessage("Book updated successfully!");
       } else {
+        // Add new book
         bookData.createdAt = firebase.firestore.Timestamp.now();
         await firestore.collection("books").add(bookData);
         setSuccessMessage("Book added successfully!");
       }
 
       setOpenSnackbar(true);
-      navigate("/books");
+      navigate("/books"); // Redirect to books list after submission
     } catch (err) {
       console.error("Error submitting form:", err);
       setError("Failed to submit the form.");
@@ -161,66 +157,31 @@ const BookForm = () => {
         </Alert>
       </Snackbar>
 
-      <Grid container spacing={2}>
-        {/* New Fields */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="ISBN10"
-            variant="outlined"
-            fullWidth
-            value={isbn10}
-            onChange={(e) => setIsbn10(e.target.value)}
-          />
+      <Grid
+        container
+        spacing={{ xs: 1, md: 2 }}
+        columns={{ xs: 1, sm: 8, md: 12 }}
+      >
+        <Grid size={{ xs: 1, sm: 1, md: 6 }}>
+          <FormControl fullWidth required>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              label="Category"
+            >
+              <MenuItem value="">
+                <em>Select a Category</em>
+              </MenuItem>
+              {categoryList.map((category) => (
+                <MenuItem key={category.id} value={category.name}>
+                  {category.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Brand"
-            variant="outlined"
-            fullWidth
-            value={brand}
-            onChange={(e) => setBrand(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Image URL"
-            variant="outlined"
-            fullWidth
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Seller Name"
-            variant="outlined"
-            fullWidth
-            value={sellerName}
-            onChange={(e) => setSellerName(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Categories (comma-separated)"
-            variant="outlined"
-            fullWidth
-            value={categories}
-            onChange={(e) => setCategories(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Tags (comma-separated)"
-            variant="outlined"
-            fullWidth
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-          />
-        </Grid>
-
-        {/* Existing Fields */}
-        {/* Title */}
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 1, sm: 1, md: 6 }}>
           <TextField
             label="Title"
             variant="outlined"
@@ -230,8 +191,7 @@ const BookForm = () => {
             required
           />
         </Grid>
-        {/* Author */}
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 1, sm: 1, md: 6 }}>
           <Autocomplete
             freeSolo
             options={authorOptions.map((option) => option.name)}
@@ -240,8 +200,70 @@ const BookForm = () => {
             renderInput={(params) => <TextField {...params} label="Author" variant="outlined" />}
           />
         </Grid>
-        {/* Rest */}
-        {/* Add existing fields similarly */}
+        <Grid size={{ xs: 1, sm: 1, md: 6 }}>
+          <Autocomplete
+            freeSolo
+            options={publisherOptions.map((option) => option.name)}
+            value={publisher}
+            onInputChange={(e, value) => setPublisher(value)}
+            renderInput={(params) => <TextField {...params} label="Publisher" variant="outlined" />}
+          />
+        </Grid>
+        <Grid size={{ xs: 1, sm: 1, md: 6 }}>
+          <TextField
+            label="Tags (comma-separated)"
+            variant="outlined"
+            fullWidth
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+          />
+        </Grid>
+        <Grid size={{ xs: 1, sm: 1, md: 6 }}>
+          <TextField
+            label="Code"
+            variant="outlined"
+            fullWidth
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
+        </Grid>
+        <Grid size={{ xs: 1, sm: 1, md: 6 }}>
+          <TextField
+            label="ISBN Code"
+            variant="outlined"
+            fullWidth
+            value={isbnCode}
+            onChange={(e) => setIsbnCode(e.target.value)}
+          />
+        </Grid>
+        <Grid size={{ xs: 1, sm: 1, md: 6 }}>
+          <FormControl fullWidth>
+            <InputLabel>Type</InputLabel>
+            <Select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              label="Type"
+            >
+              <MenuItem value="">
+                <em>Select a Type</em>
+              </MenuItem>
+              {typeList.map((type) => (
+                <MenuItem key={type.id} value={type.name}>
+                  {type.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid size={{ xs: 1, sm: 1, md: 6 }}>
+          <TextField
+            label="Image Url"
+            variant="outlined"
+            fullWidth
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
+        </Grid>
       </Grid>
 
       <Box mt={3}>

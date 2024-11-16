@@ -14,6 +14,7 @@ import PublisherForm from "./PublisherForm";
 import CollectionForm from "./CollectionForm";
 import Form from "./Form";
 import BookList from "./ListBook";
+import BookForm from "./BookAddCsv";
 import Login from "./Login";
 import ResetPassword from "./ResetPassword";
 import StudentLoginForm from "./StudentLoginForm";
@@ -165,6 +166,7 @@ const App = ({ darkMode, toggleTheme }) => {
         <Routes>
           <Route path="/add-book" element={user ? <Form /> : <Login />} />
           <Route path="/edit-book/:id" element={user ? <Form /> : <Login />} />
+          <Route path="/add-book-csv" element={user ? <BookForm /> : <Login />} />
           <Route path="/author-form" element={user ? <AuthorForm /> : <Login />} />
           <Route path="/studentlogin-form" element={user ? <StudentLoginForm /> : <Login />} />
           <Route path="/publisher-form" element={user ? <PublisherForm /> : <Login />} />
