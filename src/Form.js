@@ -32,11 +32,8 @@ const BookForm = () => {
   const [url, setUrl] = useState("");
   const [publisher, setPublisher] = useState("");
   const [tags, setTags] = useState("");
-  const [order, setOrder] = useState("");
-  const [content, setContent] = useState("");
   const [code, setCode] = useState("");
   const [isbnCode, setIsbnCode] = useState("");
-  const [newFlag, setNewFlag] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [authorOptions, setAuthorOptions] = useState([]);
@@ -46,20 +43,34 @@ const BookForm = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false); // for confirmation dialog
+  const [newAuthor, setNewAuthor] = useState(""); // store new artist name
 
   // Fetch options and book details on component mount
   useEffect(() => {
     const fetchOptions = async () => {
       try {
         const authorsSnapshot = await firestore.collection("authors").get();
-        const publishersSnapshot = await firestore.collection("publishers").get();
-        const categoriesSnapshot = await firestore.collection("categories").get();
+        const publishersSnapshot = await firestore
+          .collection("publishers")
+          .get();
+        const categoriesSnapshot = await firestore
+          .collection("categories")
+          .get();
         const typesSnapshot = await firestore.collection("types").get();
 
-        setAuthorOptions(authorsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-        setPublisherOptions(publishersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-        setCategoryList(categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-        setTypeList(typesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        setAuthorOptions(
+          authorsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        );
+        setPublisherOptions(
+          publishersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        );
+        setCategoryList(
+          categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        );
+        setTypeList(
+          typesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        );
       } catch (err) {
         console.error("Error fetching options:", err);
       }
@@ -76,12 +87,9 @@ const BookForm = () => {
             setUrl(data.url || "");
             setPublisher(data.publisher || "");
             setTags(data.tags?.join(", ") || "");
-            setOrder(data.order || "");
-            setContent(data.content || "");
             setCode(data.code || "");
-            setIsbnCode(data.isbnCode || "");
-            setNewFlag(data.newFlag || false);
-            setSelectedCategory(data.category || "");
+            setIsbnCode(data.ISBN || "");
+            setSelectedCategory(data.categories || "");
             setSelectedType(data.type || "");
           }
         } catch (err) {
@@ -145,14 +153,39 @@ const BookForm = () => {
     setSuccessMessage("");
   };
 
+  const handleAutherInputBlur = () => {
+    // Check if the artist doesn't exist in the options
+    if (author && !authorOptions.some((option) => option.name === author)) {
+      setNewAuthor(author);
+      setOpenDialog(true); // Open confirmation dialog
+    }
+  };
+
+  const handleConfirmNewAuther = () => {
+    setOpenDialog(false);
+    navigate(`/author-form`, { state: { name: newAuthor } }); // Redirect to ArtistForm with prefilled name
+  };
+
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 800, mx: "auto", p: 2 }}>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{ maxWidth: 800, mx: "auto", p: 2 }}
+    >
       <Typography variant="h5" gutterBottom>
         {id ? "Edit Book" : "Add New Book"}
       </Typography>
 
-      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={error ? "error" : "success"} sx={{ width: "100%" }}>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={error ? "error" : "success"}
+          sx={{ width: "100%" }}
+        >
           {error || successMessage}
         </Alert>
       </Snackbar>
@@ -163,22 +196,24 @@ const BookForm = () => {
         columns={{ xs: 1, sm: 8, md: 12 }}
       >
         <Grid size={{ xs: 1, sm: 1, md: 6 }}>
-          <FormControl fullWidth required>
-            <InputLabel>Category</InputLabel>
-            <Select
+          <FormControl fullWidth required error={!selectedCategory && error}>
+            <Autocomplete
+              freeSolo
+              options={categoryList.map((option) => option.name)} // Map categoryList to option names
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              label="Category"
-            >
-              <MenuItem value="">
-                <em>Select a Category</em>
-              </MenuItem>
-              {categoryList.map((category) => (
-                <MenuItem key={category.id} value={category.name}>
-                  {category.name}
-                </MenuItem>
-              ))}
-            </Select>
+              onInputChange={(e, value) => setSelectedCategory(value)} // Update selectedCategory on input change
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Category"
+                  variant="outlined"
+                  fullWidth
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  required        
+                />
+              )} 
+            />
           </FormControl>
         </Grid>
         <Grid size={{ xs: 1, sm: 1, md: 6 }}>
@@ -197,7 +232,14 @@ const BookForm = () => {
             options={authorOptions.map((option) => option.name)}
             value={author}
             onInputChange={(e, value) => setAuthor(value)}
-            renderInput={(params) => <TextField {...params} label="Author" variant="outlined" />}
+            onBlur={handleAutherInputBlur}
+            renderInput={(params) => (
+              <TextField {...params} label="Author" variant="outlined" 
+              fullWidth
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              required/>
+            )}
           />
         </Grid>
         <Grid size={{ xs: 1, sm: 1, md: 6 }}>
@@ -206,7 +248,9 @@ const BookForm = () => {
             options={publisherOptions.map((option) => option.name)}
             value={publisher}
             onInputChange={(e, value) => setPublisher(value)}
-            renderInput={(params) => <TextField {...params} label="Publisher" variant="outlined" />}
+            renderInput={(params) => (
+              <TextField {...params} label="Publisher" variant="outlined" />
+            )}
           />
         </Grid>
         <Grid size={{ xs: 1, sm: 1, md: 6 }}>
@@ -233,29 +277,22 @@ const BookForm = () => {
             variant="outlined"
             fullWidth
             value={isbnCode}
-            onChange={(e) => setIsbnCode(e.target.value)}
+            onChange={(e) => setIsbnCode(e.target.value)}        
+            required
           />
         </Grid>
         <Grid size={{ xs: 1, sm: 1, md: 6 }}>
           <FormControl fullWidth>
-            <InputLabel>Type</InputLabel>
-            <Select
+            <Autocomplete
+              freeSolo
+              options={typeList.map((option) => option.name)} // Map categoryList to option names
               value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              label="Type"
-            >
-              <MenuItem value="">
-                <em>Select a Type</em>
-              </MenuItem>
-              {typeList.map((type) => (
-                <MenuItem key={type.id} value={type.name}>
-                  {type.name}
-                </MenuItem>
-              ))}
-            </Select>
+              onInputChange={(e, value) => setSelectedType(value)} // Update selectedCategory on input change
+              renderInput={(params) => <TextField {...params} label="Type" />} // Render the input field
+            />
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 1, sm: 1, md: 6 }}>
+        <Grid size={{ xs: 2, sm: 2, md: 12 }}>
           <TextField
             label="Image Url"
             variant="outlined"
@@ -271,6 +308,25 @@ const BookForm = () => {
           {id ? "Update Book" : "Add Book"}
         </Button>
       </Box>
+
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Create New Author</DialogTitle>
+        <DialogContent>
+          <Typography>
+            The author "{newAuthor}" does not exist. Would you like to create a
+            new author entry?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmNewAuther} color="primary">
+            Yes, Create Author
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Box>
   );
 };

@@ -45,7 +45,7 @@ const AuthorForm = () => {
 
   const fetchAuthors = async () => {
     try {
-      const snapshot = await firestore.collection("authors").orderBy("numbering").get();
+      const snapshot = await firestore.collection("authors").get();
       const authorList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -61,15 +61,14 @@ const AuthorForm = () => {
     e.preventDefault();
 
     try {
-      if (!name || !numbering) {
+      if (!name) {
         setError("Please fill in all fields.");
         return;
       }
 
       const authorData = {
         name,
-        numbering, // Save author number
-      };
+        };
 
       if (editingAuthorId) {
         // If editing, update the author
@@ -140,15 +139,6 @@ const AuthorForm = () => {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <TextField
-          label="Number"
-          type="number"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={numbering}
-          onChange={(e) => setNumber(e.target.value)}
-        />
         {error && <Typography color="error">{error}</Typography>}
         <Button variant="contained" color="primary" type="submit">
           {editingAuthorId ? "Update Author" : "Submit"}
@@ -164,7 +154,7 @@ const AuthorForm = () => {
         {authors.map((author) => (
           <ListItem key={author.id}>
             <ListItemText
-              primary={`#${author.numbering} - ${author.name}`} // Display author number and name
+              primary={`${author.name}`} // Display author number and name
             />
             <ListItemSecondaryAction>
               <IconButton onClick={() => handleEditAuthor(author)}>

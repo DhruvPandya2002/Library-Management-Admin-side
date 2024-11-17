@@ -45,7 +45,7 @@ import {
         setOpenSnackbar(true);
         return;
       }
-  
+    
       // Parse the CSV file
       Papa.parse(file, {
         header: true,
@@ -55,31 +55,50 @@ import {
           const existingCodes = new Set(); // Set to track unique codes
           const batch = firestore.batch(); // Firestore batch operation
           const existingISBNs = new Set(); // Track existing ISBNs
+          const existingCategories = new Set(); // Track existing categories
+          const existingAuthors = new Set(); // Track existing authors
+          const existingTypes = new Set(); // Track existing types
           let skippedBooks = 0;
-  
+    
           try {
-            // Step 1: Fetch all existing ISBNs from Firestore
-            const snapshot = await firestore.collection("books").get();
-            snapshot.forEach((doc) => {
+            // Step 1: Fetch existing data from Firestore
+            const categoriesSnapshot = await firestore.collection("categories").get();
+            categoriesSnapshot.forEach((doc) =>
+              existingCategories.add(doc.id) // Assuming categories are stored by ID
+            );
+    
+            const authorsSnapshot = await firestore.collection("authors").get();
+            authorsSnapshot.forEach((doc) => existingAuthors.add(doc.id));
+    
+            const typesSnapshot = await firestore.collection("types").get();
+            typesSnapshot.forEach((doc) => existingTypes.add(doc.id));
+    
+            const booksSnapshot = await firestore.collection("books").get();
+            booksSnapshot.forEach((doc) => {
               const data = doc.data();
               if (data.ISBN) existingISBNs.add(data.ISBN);
             });
-  
-            console.log("Existing ISBNs in Firestore:", Array.from(existingISBNs));
-  
+    
+            console.log("Existing data in Firestore:", {
+              categories: Array.from(existingCategories),
+              authors: Array.from(existingAuthors),
+              types: Array.from(existingTypes),
+              ISBNs: Array.from(existingISBNs),
+            });
+    
             // Step 2: Process each book in the CSV
             for (const [index, book] of books.entries()) {
               console.log(`Processing book #${index + 1}:`, book);
-  
+    
               // Validate required fields
               if (!book.ISBN || !book.title || !book.type) {
-                throw new Error(
-                  `Missing required fields (ISBN, title, type) in book #${index + 1}: ${JSON.stringify(
-                    book
-                  )}`
+                console.warn(
+                  `Skipping book #${index + 1}: Missing required fields.`
                 );
+                skippedBooks++;
+                continue;
               }
-  
+    
               // Check for duplicate ISBN
               if (existingISBNs.has(book.ISBN.trim())) {
                 console.warn(
@@ -88,23 +107,52 @@ import {
                 skippedBooks++;
                 continue;
               }
-  
-              // Prepare Firestore document
+    
+              // Check and add new categories
+              if (book.categories) {
+                const categories = book.categories
+                  .split(",")
+                  .map((category) => category.trim());
+                for (const category of categories) {
+                  if (!existingCategories.has(category)) {
+                    const categoryRef = firestore
+                      .collection("categories")
+                      .doc(category);
+                    batch.set(categoryRef, { name: category });
+                    existingCategories.add(category);
+                  }
+                }
+              }
+    
+              // Check and add new author
+              if (book.author && !existingAuthors.has(book.author.trim())) {
+                const authorRef = firestore
+                  .collection("authors")
+                  .doc(book.author.trim());
+                batch.set(authorRef, { name: book.author.trim() });
+                existingAuthors.add(book.author.trim());
+              }
+    
+              // Check and add new type
+              if (!existingTypes.has(book.type.trim())) {
+                const typeRef = firestore.collection("types").doc(book.type.trim());
+                batch.set(typeRef, { name: book.type.trim() });
+                existingTypes.add(book.type.trim());
+              }
+    
+              // Prepare Firestore document for the book
               const bookRef = firestore.collection("books").doc();
               const code = await generateUniqueCode(
                 book.type.trim(),
                 existingCodes
               );
-  
+    
               const bookData = {
                 ISBN: book.ISBN.trim(),
                 publisher: book.publisher?.trim() || "",
                 url: book.url?.trim() || "",
                 title: book.title.trim(),
-                categories: book.categories
-                  ?.split(",")
-                  .map((cat) => cat.trim())
-                  .filter(Boolean), // Split and trim categories
+                categories: book.categories, // Keep categories as raw string
                 tags: book.tags
                   ?.split(",")
                   .map((tag) => tag.trim())
@@ -115,12 +163,12 @@ import {
                 createdAt: firebase.firestore.Timestamp.now(),
                 updatedAt: firebase.firestore.Timestamp.now(),
               };
-  
+    
               console.log(`Book data prepared for Firestore:`, bookData);
               batch.set(bookRef, bookData);
               existingISBNs.add(book.ISBN.trim()); // Add ISBN to local set
             }
-  
+    
             // Step 3: Commit batch
             await batch.commit();
             setSuccessMessage(
@@ -140,6 +188,7 @@ import {
         },
       });
     };
+    
   
     // Handles Snackbar close
     const handleCloseSnackbar = () => {

@@ -30,7 +30,7 @@ const CollectionForm = ({ collectionName }) => {
   const fetchCollections = useCallback(async () => {
     setLoading(true);
     try {
-      const snapshot = await firestore.collection(collectionName).orderBy("numbering").get();
+      const snapshot = await firestore.collection(collectionName).get();
       const collectionList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -58,8 +58,7 @@ const CollectionForm = ({ collectionName }) => {
     }
 
     const collectionData = {
-      name,
-      numbering: collections.length + 1,
+      name
     };
 
     setLoading(true);
@@ -170,16 +169,9 @@ const CollectionForm = ({ collectionName }) => {
 
     const updatedCollections = newCollections.map((item, idx) => ({
       ...item,
-      numbering: idx + 1,
     }));
 
     setCollections(updatedCollections);
-
-    // Update Firestore with new numbering
-    updatedCollections.forEach((item) => {
-      firestore.collection(collectionName).doc(item.id).update({ numbering: item.numbering });
-    });
-
     setIsDragging(false); // Reset dragging state
   };
 
@@ -240,7 +232,7 @@ const CollectionForm = ({ collectionName }) => {
           <DragIndicatorIcon />
         </IconButton>
         <ListItemText
-          primary={`#${collection.numbering} - ${collection.name}`}
+          primary={`${collection.name}`}
           sx={{userSelect: "none", // Prevent text selection
             WebkitUserSelect: "none", // For Safari
             MozUserSelect: "none",}} // Apply the unselectable style here
