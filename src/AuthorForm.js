@@ -1,5 +1,3 @@
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
@@ -8,15 +6,20 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  ListItemText,
   Snackbar,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
+  Paper,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import { firestore } from "./firebase";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -25,7 +28,7 @@ const AuthorForm = () => {
   const [numbering, setNumber] = useState(""); // State for author number
   const [authors, setAuthors] = useState([]);
   const [error, setError] = useState(null);
-  const [editingAuthorId, setEditingAuthorId] = useState(null); // State for tracking the author being edited
+  const [editingAuthorId, setEditingAuthorId] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -33,7 +36,6 @@ const AuthorForm = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Prefill the author name if passed through state (from previous form)
     if (location.state && location.state.name) {
       setName(location.state.name);
     }
@@ -56,26 +58,23 @@ const AuthorForm = () => {
     }
   };
 
-  // Consolidated submit function to handle both add and edit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       if (!name) {
         setError("Please fill in all fields.");
         return;
       }
 
-      const authorData = {
-        name,
-        };
+      const authorData = { name };
 
       if (editingAuthorId) {
-        // If editing, update the author
-        await firestore.collection("authors").doc(editingAuthorId).update(authorData);
+        await firestore
+          .collection("authors")
+          .doc(editingAuthorId)
+          .update(authorData);
         setSnackbarMessage("Author updated successfully.");
       } else {
-        // If not editing, add a new author
         await firestore.collection("authors").add(authorData);
         setSnackbarMessage("Author added successfully.");
       }
@@ -84,7 +83,7 @@ const AuthorForm = () => {
       resetForm();
       fetchAuthors();
       setTimeout(() => {
-        navigate(-1); // Go back to the previous page
+        navigate(-1);
       }, 2000);
     } catch (error) {
       console.error("Error adding/updating author:", error);
@@ -110,13 +109,11 @@ const AuthorForm = () => {
   const handleEditAuthor = (author) => {
     setEditingAuthorId(author.id);
     setName(author.name);
-    setNumber(author.numbering); // Set number for editing
   };
 
   const resetForm = () => {
     setName("");
-    setNumber(""); // Reset the form inputs
-    setEditingAuthorId(null); // Reset editing state
+    setEditingAuthorId(null);
     setError(null);
   };
 
@@ -150,23 +147,31 @@ const AuthorForm = () => {
         )}
       </form>
 
-      <List>
-        {authors.map((author) => (
-          <ListItem key={author.id}>
-            <ListItemText
-              primary={`${author.name}`} // Display author number and name
-            />
-            <ListItemSecondaryAction>
-              <IconButton onClick={() => handleEditAuthor(author)}>
-                <EditIcon />
-              </IconButton>
-              <IconButton onClick={() => handleDeleteAuthor(author.id)}>
-                <DeleteIcon />
-              </IconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))}
-      </List>
+      <TableContainer component={Paper} sx={{ mt: 4 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell align="right">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {authors.map((author) => (
+              <TableRow key={author.id}>
+                <TableCell>{author.name}</TableCell>
+                <TableCell align="right">
+                  <IconButton onClick={() => handleEditAuthor(author)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton onClick={() => handleDeleteAuthor(author.id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       <Dialog open={!!confirmDeleteId} onClose={() => setConfirmDeleteId(null)}>
         <DialogTitle>Confirm Deletion</DialogTitle>
