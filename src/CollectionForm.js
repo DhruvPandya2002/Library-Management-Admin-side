@@ -198,7 +198,7 @@ const CollectionForm = ({ collectionName }) => {
         </Button>
         {editingId && (
           <Button variant="outlined" color="secondary" onClick={resetForm} sx={{ ml: 2 }}>
-            Cancel Edit
+            Cancel Edit it
           </Button>
         )}
       </form>
@@ -210,9 +210,6 @@ const CollectionForm = ({ collectionName }) => {
   {collections.map((collection, index) => (
     <React.Fragment key={collection.id}>
       <ListItem
-        // onTouchStart={() => handleLongPressStart(index)}
-        // onTouchEnd={handleTouchEnd}
-        // onTouchMove={handleTouchMove}
         onMouseDown={() => handleMouseDown(index)}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}

@@ -1,4 +1,4 @@
-import { Delete, Edit } from "@mui/icons-material";
+// import { Delete, Edit } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -23,50 +23,51 @@ import React, { useEffect, useState } from "react";
 import { firestore } from "./firebase";
 import { useNavigate } from "react-router-dom";
 
-const BookList = () => {
-  const theme = useTheme();
-  const [books, setBooks] = useState([]);
+const StudentList = () => {
+  // const theme = useTheme(); 
+  const [students, setStudent] = useState([]);
   const [searchInput, setSearchInput] = useState("");
-  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [filterStudents, setfilterStudents] = useState([]);
   const [page, setPage] = useState(0); // Current page for pagination
   const [rowsPerPage, setRowsPerPage] = useState(10); // Number of rows per page
   const [openDialog, setOpenDialog] = useState(false); // Delete confirmation dialog
-  const [selectedBookId, setSelectedBookId] = useState(null); // ID of book to delete
+  const [selectedStudnetId, setselectedStudnetId] = useState(null); // ID of book to delete
   const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch books from Firestore
-    const fetchBooks = async () => {
+    const fetchStudents = async () => {
       try {
-        const snapshot = await firestore.collection("books").get();
-        const booksData = snapshot.docs.map((doc) => ({
+        const snapshot = await firestore.collection("students").get();
+        const studentData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setBooks(booksData);
-        setFilteredBooks(booksData);
+        setStudent(studentData);
+        setfilterStudents(studentData);
       } catch (error) {
         console.error("Error fetching books:", error);
       }
     };
 
-    fetchBooks();
+    fetchStudents();
   }, []);
 
+  // search logic
   useEffect(() => {
-    // Filter books based on search input
     const searchTerm = searchInput.toLowerCase();
-    const results = books.filter(
-      (book) =>
-        book.title.toLowerCase().includes(searchTerm) ||
-        book.author.toLowerCase().includes(searchTerm) ||
-        (book.tags && book.tags.some((tag) => tag.toLowerCase().includes(searchTerm)))
+    const results = students.filter((student) =>
+      (student.email?.toLowerCase().includes(searchTerm) ||
+       student.name?.toLowerCase().includes(searchTerm) ||
+       student.usn?.includes(searchTerm))
     );
-    setFilteredBooks(results);
-  }, [searchInput, books]);
+    setfilterStudents(results);
+  }, [searchInput, students]);
+  
 
   const handleSearchChange = (e) => {
     setSearchInput(e.target.value);
+
   };
 
   const handlePageChange = (event, newPage) => {
@@ -78,38 +79,38 @@ const BookList = () => {
     setPage(0);
   };
 
-  const handleAddNewBook = () => {
-    navigate("/add-book"); // Redirect to add book page
+  const handleAddNewStudent = () => {
+    navigate("/add-student"); // Redirect to add book page
   };
 
-  const handleUploadBooks = () => {
-    navigate("/add-book-csv"); // Redirect to CSV book upload page
+  const handleUploadStudents = () => {
+    navigate("/add-student-csv"); // Redirect to CSV book upload page
   };
 
-  const handleEditBook = (id) => {
-    navigate(`/edit-book/${id}`); // Redirect to edit book page with book ID
+  const handleEditStudent = (id) => {
+    navigate(`/edit-student/${id}`); // Redirect to edit book page with book ID
   };
 
   const handleDeleteDialogOpen = (id) => {
-    setSelectedBookId(id); // Set the selected book ID
+    setselectedStudnetId(id); // Set the selected book ID
     setOpenDialog(true); // Open confirmation dialog
   };
 
   const handleDeleteDialogClose = () => {
     setOpenDialog(false); // Close confirmation dialog
-    setSelectedBookId(null); // Reset selected book ID
+    setselectedStudnetId(null); // Reset selected book ID
   };
 
-  const handleDeleteBook = async () => {
-    if (!selectedBookId) return;
+  const handleDeleteStudent = async () => {
+    if (!selectedStudnetId) return;
 
     try {
-      await firestore.collection("books").doc(selectedBookId).delete();
-      setBooks((prevBooks) =>
-        prevBooks.filter((book) => book.id !== selectedBookId)
+      await firestore.collection("students").doc(selectedStudnetId).delete();
+      setStudent((prevStudents) =>
+        prevStudents.filter((students) => students.id !== selectedStudnetId)
       );
-      setFilteredBooks((prevBooks) =>
-        prevBooks.filter((book) => book.id !== selectedBookId)
+      setfilterStudents((prevStudents) =>
+        prevStudents.filter((students) => students.id !== selectedStudnetId)
       );
     } catch (error) {
       console.error("Error deleting book:", error);
@@ -121,7 +122,7 @@ const BookList = () => {
   return (
     <Container maxWidth="lg" sx={{ marginTop: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Book List
+        Students List
       </Typography>
       <Box
         display="flex"
@@ -141,12 +142,12 @@ const BookList = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={handleAddNewBook}
+            onClick={handleAddNewStudent}
             sx={{ marginRight: 1 }}
           >
-            Add New Book
+            Add Students
           </Button>
-          <Button variant="outlined" color="secondary" onClick={handleUploadBooks}>
+          <Button variant="outlined" color="secondary" onClick={handleUploadStudents}>
             Upload via CSV
           </Button>
         </Box>
@@ -155,28 +156,30 @@ const BookList = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell align="left">Title</TableCell>
-              <TableCell align="left">Author</TableCell>
-              {/* <TableCell align="left">Tags</TableCell> */}
+              <TableCell align="left">Name</TableCell>
+              <TableCell align="left">Email</TableCell>              
+              <TableCell align="left">Usn</TableCell>
+              <TableCell align="left">Department</TableCell>
+              <TableCell align="left">Branch</TableCell>
               <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredBooks
+            {filterStudents
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((book) => (
-                <TableRow key={book.id}>
-                  <TableCell align="left">{book.title}</TableCell>
-                  <TableCell align="left">{book.author}</TableCell>
-                  {/* <TableCell align="left">
-                    {book.tags ? book.tags.join(", ") : "N/A"}
-                  </TableCell> */}
+              .map((student) => (
+                <TableRow key={student.id}>
+                  <TableCell align="left">{student.name}</TableCell>
+                  <TableCell align="left">{student.email}</TableCell>                  
+                  <TableCell align="left">{student.usn}</TableCell>
+                  <TableCell align="left">{student.department}</TableCell>
+                  <TableCell align="left">{student.branch}</TableCell>
                   <TableCell align="center">
                     <Button
                       size="small"
                       variant="outlined"
                       color="primary"
-                      onClick={() => handleEditBook(book.id)}
+                      onClick={() => handleEditStudent(student.id)}
                       sx={{ marginRight: 1 }}
                     >
                       Edit
@@ -185,7 +188,7 @@ const BookList = () => {
                       size="small"
                       variant="outlined"
                       color="error"
-                      onClick={() => handleDeleteDialogOpen(book.id)}
+                      onClick={() => handleDeleteDialogOpen(student.id)}
                     >
                       Delete
                     </Button>
@@ -198,7 +201,7 @@ const BookList = () => {
 
       <TablePagination
         component="div"
-        count={filteredBooks.length}
+        count={filterStudents.length}
         page={page}
         onPageChange={handlePageChange}
         rowsPerPage={rowsPerPage}
@@ -224,7 +227,7 @@ const BookList = () => {
           <Button onClick={handleDeleteDialogClose} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleDeleteBook} color="error">
+          <Button onClick={handleDeleteStudent} color="error">
             Delete
           </Button>
         </DialogActions>
@@ -233,4 +236,4 @@ const BookList = () => {
   );
 };
 
-export default BookList;
+export default StudentList;

@@ -5,7 +5,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   Snackbar,
   Table,
   TableBody,
@@ -13,6 +12,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   TextField,
   Typography,
   Paper,
@@ -25,13 +25,14 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const AuthorForm = () => {
   const [name, setName] = useState("");
-  const [numbering, setNumber] = useState(""); // State for author number
   const [authors, setAuthors] = useState([]);
   const [error, setError] = useState(null);
   const [editingAuthorId, setEditingAuthorId] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [page, setPage] = useState(0); // Current page number
+  const [rowsPerPage, setRowsPerPage] = useState(5); // Rows per page
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -82,9 +83,6 @@ const AuthorForm = () => {
       setSnackbarOpen(true);
       resetForm();
       fetchAuthors();
-      setTimeout(() => {
-        navigate(-1);
-      }, 2000);
     } catch (error) {
       console.error("Error adding/updating author:", error);
     }
@@ -121,6 +119,20 @@ const AuthorForm = () => {
     setSnackbarOpen(false);
   };
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedAuthors = authors.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom>
@@ -147,7 +159,7 @@ const AuthorForm = () => {
         )}
       </form>
 
-      <TableContainer component={Paper} sx={{ mt: 4 }}>
+      <TableContainer component={Paper} sx={{ border: "1px solid #ddd", borderRadius: "8px" , mt: 4 }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -156,22 +168,42 @@ const AuthorForm = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {authors.map((author) => (
+            {paginatedAuthors.map((author) => (
               <TableRow key={author.id}>
-                <TableCell>{author.name}</TableCell>
+                <TableCell>{author.name}</TableCell>            
                 <TableCell align="right">
-                  <IconButton onClick={() => handleEditAuthor(author)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDeleteAuthor(author.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => handleEditAuthor(author)}
+                      sx={{ marginRight: 1 }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDeleteAuthor(author.id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </Table>      
       </TableContainer>
+      <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={authors.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
 
       <Dialog open={!!confirmDeleteId} onClose={() => setConfirmDeleteId(null)}>
         <DialogTitle>Confirm Deletion</DialogTitle>
