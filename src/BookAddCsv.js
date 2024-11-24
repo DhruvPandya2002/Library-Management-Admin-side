@@ -4,8 +4,8 @@ import {
     Button,
     Snackbar,
     Typography,
-    Grid,
   } from "@mui/material";
+  import Grid from '@mui/material/Grid2';
   import React, { useState } from "react";
   import Papa from "papaparse";
   import firebase from "firebase/compat/app";

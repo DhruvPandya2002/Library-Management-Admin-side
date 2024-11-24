@@ -1,8 +1,11 @@
 import CollectionsIcon from "@mui/icons-material/Collections";
-import EditIcon from "@mui/icons-material/Edit";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 import LabelIcon from "@mui/icons-material/Label";
 import MenuIcon from "@mui/icons-material/Menu";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
+import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import { AppBar, Box, Button, CircularProgress, CssBaseline, Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import PersonIcon from '@mui/icons-material/Person';
 import { onAuthStateChanged } from "firebase/auth";
@@ -10,7 +13,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { auth } from "./firebase"; // Import Firebase auth
 import AuthorForm from "./AuthorForm";
-// import PublisherForm from "./PublisherForm";
 import CollectionForm from "./CollectionForm";
 import Form from "./Form";
 import BookList from "./ListBook";
@@ -18,10 +20,12 @@ import BookUpload from "./BookAddCsv";
 import StudentUpload from "./StudentAddCsv";// upload
 import Login from "./Login";
 import ResetPassword from "./ResetPassword";
-// import StudentLoginForm from "./StudentLoginForm12";
 import StudentList from "./StudentList";
 import StudentForm from "./StudentForm";
-
+import BookIssue from './BookIssue';
+import Penalty from './Penalty';
+import EntryLogs from './EntryLogs';
+import Dashboard from './Dashboard';
 
 const drawerWidth = 245;
 
@@ -62,11 +66,15 @@ const App = ({ darkMode, toggleTheme }) => {
   }, [navigate, location.pathname]);
 
   const navItems = [
-    { label: "List Book", icon: <PlaylistAddCheckIcon />, path: "/books/" },
+    { label: "Dashboard", icon: <DashboardIcon />, path: "/Dashboard/" },
+    { label: "List Book", icon: <PlaylistAddCheckIcon />, path: "/books/" },    
     { label: "Author Form", icon: <PersonIcon />, path: "/author-form" },
     { label: "Student List", icon: <PersonIcon />, path: "/studentList" },
     { label: "Types", icon: <LabelIcon />, path: "/types" },
     { label: "Category", icon: <CollectionsIcon />, path: "/categories" },
+    { label: "Book Issue", icon: <MenuBookIcon />, path: "/bookissued" },
+    { label: "Penalty", icon: <CurrencyRupeeIcon />, path: "/Penalty" },
+    { label: "EntryLogs", icon: <SyncAltIcon />, path: "/EntryLogs" },
   ];
 
   const handleDrawerToggle = useCallback(() => setMobileOpen((prev) => !prev), []);
@@ -178,7 +186,11 @@ const App = ({ darkMode, toggleTheme }) => {
           <Route path="/studentList" element={user ? <StudentList /> : <Login />} />      
           <Route path="/categories" element={user ? <CollectionForm collectionName="categories" /> : <Login />} />
           <Route path="/books" element={user ? <BookList /> : <Login />} />
-          <Route path="/" element={user ? <BookList /> : <Login />} />
+          <Route path="/bookissued" element={user ? <BookIssue /> : <Login />} />
+          <Route path="/Penalty" element={user ? <Penalty /> : <Login />} />
+          <Route path="/EntryLogs" element={user ? <EntryLogs /> : <Login />} />
+          <Route path="/Dashboard" element={user ? <Dashboard /> : <Login />} />
+          <Route path="/" element={user ? <Dashboard /> : <Login />} />
           <Route path="/types" element={user ? <CollectionForm collectionName="types" /> : <Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />        
