@@ -46,6 +46,8 @@ const BookForm = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openDialog, setOpenDialog] = useState(false); // for confirmation dialog
   const [newAuthor, setNewAuthor] = useState(""); // store new artist name
+  const [newCategory, setNewCategory] = useState(""); // Store the new category name
+  const [newType, setNewType] = useState(""); // For new type
 
   // Fetch options and book details on component mount
   useEffect(() => {
@@ -169,6 +171,38 @@ const BookForm = () => {
     navigate(`/author-form`, { state: { name: newAuthor } }); // Redirect to ArtistForm with prefilled name
   };
 
+  const handleCategoryInputBlur = () => {
+    // Check if the category doesn't exist in the options
+    if (
+      selectedCategory &&
+      !categoryList.some((option) => option.name === selectedCategory)
+    ) {
+      setNewCategory(selectedCategory); // Store the category name
+      setOpenDialog(true); // Open confirmation dialog
+    }
+  };
+
+  const handleConfirmNewCategory = () => {
+    setOpenDialog(false);
+    navigate(`/categories`, { state: { name: newCategory } }); // Redirect to CategoryForm with prefilled name
+  };
+
+  // for type input
+  const handleTypeInputBlur = () => {
+    if (
+      selectedType &&
+      !typeList.some((option) => option.name === selectedType)
+    ) {
+      setNewType(selectedType); // Store the type name
+      setOpenDialog(true); // Open confirmation dialog
+    }
+  };
+
+  const handleConfirmNewType = () => {
+    setOpenDialog(false);
+    navigate(`/types`, { state: { name: newType } }); // Redirect to TypeForm with prefilled name
+  };
+
   return (
     <Box
       component="form"
@@ -205,6 +239,7 @@ const BookForm = () => {
               options={categoryList.map((option) => option.name)} // Map categoryList to option names
               value={selectedCategory}
               onInputChange={(e, value) => setSelectedCategory(value)} // Update selectedCategory on input change
+              onBlur={handleCategoryInputBlur} // Add onBlur for category validation
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -213,9 +248,9 @@ const BookForm = () => {
                   fullWidth
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  required        
+                  required
                 />
-              )} 
+              )}
             />
           </FormControl>
         </Grid>
@@ -237,11 +272,15 @@ const BookForm = () => {
             onInputChange={(e, value) => setAuthor(value)}
             onBlur={handleAutherInputBlur}
             renderInput={(params) => (
-              <TextField {...params} label="Author" variant="outlined" 
-              fullWidth
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              required/>
+              <TextField
+                {...params}
+                label="Author"
+                variant="outlined"
+                fullWidth
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                required
+              />
             )}
           />
         </Grid>
@@ -280,7 +319,7 @@ const BookForm = () => {
             variant="outlined"
             fullWidth
             value={isbnCode}
-            onChange={(e) => setIsbnCode(e.target.value)}        
+            onChange={(e) => setIsbnCode(e.target.value)}
             required
           />
         </Grid>
@@ -291,6 +330,7 @@ const BookForm = () => {
               options={typeList.map((option) => option.name)} // Map categoryList to option names
               value={selectedType}
               onInputChange={(e, value) => setSelectedType(value)} // Update selectedCategory on input change
+              onBlur={handleTypeInputBlur}
               renderInput={(params) => <TextField {...params} label="Type" />} // Render the input field
             />
           </FormControl>
@@ -339,6 +379,65 @@ const BookForm = () => {
         </DialogActions>
       </Dialog>
 
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Create New Entry</DialogTitle>
+        <DialogContent>
+          <Typography>
+            {newAuthor
+              ? `The author "${newAuthor}" does not exist. Would you like to create a new author entry?`
+              : `The category "${newCategory}" does not exist. Would you like to create a new category entry?`}
+          </Typography>
+        </DialogContent>
+        {/* category */}
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="secondary">
+            Cancel
+          </Button>
+          {newAuthor && (
+            <Button onClick={handleConfirmNewAuther} color="primary">
+              Yes, Create Author
+            </Button>
+          )}
+          {newCategory && (
+            <Button onClick={handleConfirmNewCategory} color="primary">
+              Yes, Create Category
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+      {/* type */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>Create New Entry</DialogTitle>
+        <DialogContent>
+          <Typography>
+            {newAuthor
+              ? `The author "${newAuthor}" does not exist. Would you like to create a new author entry?`
+              : newCategory
+              ? `The category "${newCategory}" does not exist. Would you like to create a new category entry?`
+              : `The type "${newType}" does not exist. Would you like to create a new type entry?`}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="secondary">
+            Cancel
+          </Button>
+          {newAuthor && (
+            <Button onClick={handleConfirmNewAuther} color="primary">
+              Yes, Create Author
+            </Button>
+          )}
+          {newCategory && (
+            <Button onClick={handleConfirmNewCategory} color="primary">
+              Yes, Create Category
+            </Button>
+          )}
+          {newType && (
+            <Button onClick={handleConfirmNewType} color="primary">
+              Yes, Create Type
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
