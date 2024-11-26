@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Grid,
@@ -16,17 +16,16 @@ import {
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import GroupIcon from "@mui/icons-material/Group";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
 
 const Dashboard = () => {
-  // Example stats (replace with data from your backend)
-  const stats = {
-    totalBooks: 150,
+  const [totalBooks, setTotalBooks] = useState(0); // State for total books
+  const [stats, setStats] = useState({
     totalStudents: 75,
     booksIssued: 25,
-  };
+  });
 
-  // Example "User of the Week" data (replace with data from your backend)
-  const usersOfTheWeek = [
+  const [usersOfTheWeek] = useState([
     { id: 1, name: "John Doe", email: "john@example.com", booksIssued: 5, totalHoursSpent: 10 },
     { id: 2, name: "Jane Smith", email: "jane@example.com", booksIssued: 4, totalHoursSpent: 8 },
     { id: 3, name: "Alice Johnson", email: "alice@example.com", booksIssued: 3, totalHoursSpent: 7 },
@@ -36,12 +35,28 @@ const Dashboard = () => {
     { id: 7, name: "Sophia Taylor", email: "sophia@example.com", booksIssued: 2, totalHoursSpent: 4 },
     { id: 8, name: "David White", email: "david@example.com", booksIssued: 4, totalHoursSpent: 9 },
     { id: 9, name: "Michael Scott", email: "michael@example.com", booksIssued: 3, totalHoursSpent: 6 },
-  ];
-  
+  ]);
 
   // Pagination state
   const [page, setPage] = useState(0); // Current page
   const [rowsPerPage, setRowsPerPage] = useState(5); // Rows per page
+
+  const db = getFirestore();
+
+  // Fetch total books from Firestore
+  useEffect(() => {
+    const fetchTotalBooks = async () => {
+      try {
+        const bookCollection = collection(db, "books"); // Replace "books" with the actual name of your Firestore collection
+        const bookSnapshot = await getDocs(bookCollection);
+        setTotalBooks(bookSnapshot.size); // Get the total count of documents
+      } catch (error) {
+        console.error("Error fetching total books:", error);
+      }
+    };
+
+    fetchTotalBooks();
+  }, [db]);
 
   // Handle pagination
   const handlePageChange = (event, newPage) => {
@@ -87,7 +102,7 @@ const Dashboard = () => {
                 Total Books
               </Typography>
               <Typography variant="h4" sx={{ color: "#2196F3" }}>
-                {stats.totalBooks}
+                {totalBooks}
               </Typography>
             </Box>
           </Paper>

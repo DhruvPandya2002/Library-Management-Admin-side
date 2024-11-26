@@ -162,6 +162,7 @@ import {
                 code,
                 createdAt: firebase.firestore.Timestamp.now(),
                 updatedAt: firebase.firestore.Timestamp.now(),
+                bookavailable: book.bookavailable 
               };
     
               console.log(`Book data prepared for Firestore:`, bookData);

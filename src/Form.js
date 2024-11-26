@@ -34,6 +34,7 @@ const BookForm = () => {
   const [tags, setTags] = useState("");
   const [code, setCode] = useState("");
   const [isbnCode, setIsbnCode] = useState("");
+  const [bookavailable, setBookavailable] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [authorOptions, setAuthorOptions] = useState([]);
@@ -89,6 +90,7 @@ const BookForm = () => {
             setTags(data.tags?.join(", ") || "");
             setCode(data.code || "");
             setIsbnCode(data.ISBN || "");
+            setBookavailable(data.bookavailable || "");
             setSelectedCategory(data.categories || "");
             setSelectedType(data.type || "");
           }
@@ -122,6 +124,7 @@ const BookForm = () => {
         tags: tagsArray,
         code,
         isbnCode,
+        bookavailable,
         category: selectedCategory,
         type: selectedType,
         updatedAt: firebase.firestore.Timestamp.now(),
@@ -292,7 +295,16 @@ const BookForm = () => {
             />
           </FormControl>
         </Grid>
-        <Grid size={{ xs: 2, sm: 2, md: 12 }}>
+        <Grid size={{ xs: 2, sm: 2, md: 6 }}>
+          <TextField
+            label="Available Books"
+            variant="outlined"
+            fullWidth
+            value={bookavailable}
+            onChange={(e) => setBookavailable(e.target.value)}
+          />
+        </Grid>
+        <Grid size={{ xs: 2, sm: 2, md: 6 }}>
           <TextField
             label="Image Url"
             variant="outlined"
