@@ -109,7 +109,7 @@ import {
               const csvContent = Papa.unparse(skippedStudentsData); // Convert to CSV format
               const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
               setTimeout(() => {
-                // saveAs(blob, "skipped_students.csv"); // Download the file
+                saveAs(blob, "skipped_students.csv"); // Download the file
               }, 3000);
             }
           } catch (err) {
