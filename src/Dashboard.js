@@ -132,7 +132,7 @@ const Dashboard = () => {
             </Box>
             <Box sx={{ textAlign: "center" }}>
               <Typography variant="subtitle1" color="textSecondary">
-                Today Issues
+                Today Books Issued
               </Typography>
               <Typography variant="h4" sx={{ color: "#4CAF50" }}>
                 {stats.totalStudents}
