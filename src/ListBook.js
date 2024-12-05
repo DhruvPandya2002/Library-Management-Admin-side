@@ -60,6 +60,7 @@ const BookList = () => {
       (book) =>
         book.title.toLowerCase().includes(searchTerm) ||
         book.author.toLowerCase().includes(searchTerm) ||
+        book.categories.toLowerCase().includes(searchTerm) ||
         (book.tags && book.tags.some((tag) => tag.toLowerCase().includes(searchTerm)))
     );
     setFilteredBooks(results);

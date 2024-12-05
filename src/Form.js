@@ -33,11 +33,12 @@ const BookForm = () => {
   const [publisher, setPublisher] = useState("");
   const [tags, setTags] = useState("");
   const [code, setCode] = useState("");
-  const [isbnCode, setIsbnCode] = useState("");
+  const [ISBN, setIsbn] = useState("");
   const [bookavailable, setBookavailable] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [Book_shelf, setBook_shelf] = useState("");
+  const [category, setCategory] = useState("");
   const [selectedType, setSelectedType] = useState("");
-  const [authorOptions, setAuthorOptions] = useState([]);
+  const [authorOptions, setAuthorOptions] = useState([]);  
   const [publisherOptions, setPublisherOptions] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
   const [typeList, setTypeList] = useState([]);
@@ -53,7 +54,7 @@ const BookForm = () => {
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const authorsSnapshot = await firestore.collection("authors").get();
+        const authorsSnapshot = await firestore.collection("authors").get();       
         const publishersSnapshot = await firestore
           .collection("publishers")
           .get();
@@ -64,7 +65,7 @@ const BookForm = () => {
 
         setAuthorOptions(
           authorsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-        );
+        );  
         setPublisherOptions(
           publishersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
         );
@@ -91,9 +92,10 @@ const BookForm = () => {
             setPublisher(data.publisher || "");
             setTags(data.tags?.join(", ") || "");
             setCode(data.code || "");
-            setIsbnCode(data.ISBN || "");
+            setIsbn(data.ISBN || "");
             setBookavailable(data.bookavailable || "");
-            setSelectedCategory(data.categories || "");
+            setBook_shelf(data.Book_shelf || "");
+            setCategory(data.categories || "");
             setSelectedType(data.type || "");
           }
         } catch (err) {
@@ -110,7 +112,7 @@ const BookForm = () => {
     e.preventDefault();
 
     // Basic validation
-    if (!title || !selectedCategory) {
+    if (!title || !category) {
       setError("Please fill in all required fields.");
       setOpenSnackbar(true);
       return;
@@ -125,9 +127,10 @@ const BookForm = () => {
         publisher,
         tags: tagsArray,
         code,
-        isbnCode,
+        ISBN,
         bookavailable,
-        category: selectedCategory,
+        Book_shelf,
+        categories: category,
         type: selectedType,
         updatedAt: firebase.firestore.Timestamp.now(),
       };
@@ -173,11 +176,8 @@ const BookForm = () => {
 
   const handleCategoryInputBlur = () => {
     // Check if the category doesn't exist in the options
-    if (
-      selectedCategory &&
-      !categoryList.some((option) => option.name === selectedCategory)
-    ) {
-      setNewCategory(selectedCategory); // Store the category name
+    if (category && !categoryList.some((option) => option.name === category)) {
+      setNewCategory(category); // Store the category name
       setOpenDialog(true); // Open confirmation dialog
     }
   };
@@ -233,12 +233,12 @@ const BookForm = () => {
         columns={{ xs: 1, sm: 8, md: 12 }}
       >
         <Grid size={{ xs: 1, sm: 1, md: 6 }}>
-          <FormControl fullWidth required error={!selectedCategory && error}>
+          {/* <FormControl fullWidth required > */}
             <Autocomplete
               freeSolo
               options={categoryList.map((option) => option.name)} // Map categoryList to option names
-              value={selectedCategory}
-              onInputChange={(e, value) => setSelectedCategory(value)} // Update selectedCategory on input change
+              value={category}
+              onInputChange={(e, value) => setCategory(value)} // Update selectedCategory on input change
               onBlur={handleCategoryInputBlur} // Add onBlur for category validation
               renderInput={(params) => (
                 <TextField
@@ -246,13 +246,34 @@ const BookForm = () => {
                   label="Category"
                   variant="outlined"
                   fullWidth
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
                   required
                 />
               )}
             />
-          </FormControl>
+            {/* 
+            Grid size={{ xs: 1, sm: 1, md: 6 }}>
+          <Autocomplete
+            freeSolo
+            options={authorOptions.map((option) => option.name)}
+            value={author}
+            onInputChange={(e, value) => setAuthor(value)}
+            onBlur={handleAutherInputBlur}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Author"
+                variant="outlined"
+                fullWidth
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                required
+              />
+            )}
+          />
+        </Grid> */}
+          {/* </FormControl> */}
         </Grid>
         <Grid size={{ xs: 1, sm: 1, md: 6 }}>
           <TextField
@@ -318,8 +339,8 @@ const BookForm = () => {
             label="ISBN Code"
             variant="outlined"
             fullWidth
-            value={isbnCode}
-            onChange={(e) => setIsbnCode(e.target.value)}
+            value={ISBN}
+            onChange={(e) => setIsbn(e.target.value)}
             required
           />
         </Grid>
@@ -331,7 +352,7 @@ const BookForm = () => {
               value={selectedType}
               onInputChange={(e, value) => setSelectedType(value)} // Update selectedCategory on input change
               onBlur={handleTypeInputBlur}
-              renderInput={(params) => <TextField {...params} label="Type" />} // Render the input field
+              renderInput={(params) => <TextField {...params} label="Type"  />} // Render the input field              
             />
           </FormControl>
         </Grid>
@@ -345,6 +366,15 @@ const BookForm = () => {
           />
         </Grid>
         <Grid size={{ xs: 2, sm: 2, md: 6 }}>
+          <TextField
+            label="Book Shelf"
+            variant="outlined"
+            fullWidth
+            value={Book_shelf}
+            onChange={(e) => setBook_shelf(e.target.value)}
+          />
+        </Grid>
+        <Grid size={{ xs: 2, sm: 2, md: 12 }}>
           <TextField
             label="Image Url"
             variant="outlined"

@@ -162,7 +162,8 @@ import {
                 code,
                 createdAt: firebase.firestore.Timestamp.now(),
                 updatedAt: firebase.firestore.Timestamp.now(),
-                bookavailable: book.bookavailable 
+                bookavailable: book.bookavailable,
+                Book_shelf: book.book_shelf
               };
     
               console.log(`Book data prepared for Firestore:`, bookData);
@@ -241,7 +242,7 @@ import {
         </Grid>
       </Box>
     );
-  };
+  }
   
   export default BookUpload;
   
