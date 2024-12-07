@@ -88,6 +88,9 @@ const Login = () => {
           <Typography variant="body2" align="center" sx={{ mt: 2 }}>
             Forgot your password? <a href="/reset-password">Reset it here</a>
           </Typography>
+          <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+            Login  Credentials test-user@demo.com and Password= test123@
+          </Typography>
         </CardContent>
       </Card>
     </Box>
