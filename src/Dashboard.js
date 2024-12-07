@@ -74,6 +74,9 @@ const Dashboard = () => {
       <Typography variant="h4" gutterBottom>
         Dashboard
       </Typography>
+      <marquee width="100%" direction="left" height="100px">
+          This Project is Currently in Development Phase
+        </marquee>
       <Grid container spacing={3}>
         {/* Total Books */}
         <Grid item xs={12} sm={6} md={4}>
