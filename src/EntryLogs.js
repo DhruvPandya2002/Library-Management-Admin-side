@@ -19,7 +19,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { firestore } from "./firebase";
 
-const BookList = () => {
+const BookLogs = () => {
   const [bookIssues, SetbookIssues] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [filteredBooksIssues, setFilteredBooksIssues] = useState([]);
@@ -114,7 +114,7 @@ const BookList = () => {
   return (
     <Container maxWidth="lg" sx={{ marginTop: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Book List
+        Students/Faculty Logs
       </Typography>
       <Box
         display="flex"
@@ -214,4 +214,4 @@ const BookList = () => {
   );
 };
 
-export default BookList;
+export default BookLogs;

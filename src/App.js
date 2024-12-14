@@ -22,7 +22,7 @@ import Login from "./Login";
 import ResetPassword from "./ResetPassword";
 import StudentList from "./StudentList";
 import StudentForm from "./StudentForm";
-import BookIssue from './BookIssue';
+import BookBorrow from  "./BookBorrow";
 import Penalty from './Penalty';
 import EntryLogs from './EntryLogs';
 import Dashboard from './Dashboard';
@@ -72,7 +72,7 @@ const App = ({ darkMode, toggleTheme }) => {
     { label: "Student List", icon: <PersonIcon />, path: "/studentList" },
     { label: "Types", icon: <LabelIcon />, path: "/types" },
     { label: "Category", icon: <CollectionsIcon />, path: "/categories" },
-    { label: "Book Issue", icon: <MenuBookIcon />, path: "/bookissued" },
+    { label: "Book Issue", icon: <MenuBookIcon />, path: "/BookBorrow" },
     { label: "Penalty", icon: <CurrencyRupeeIcon />, path: "/Penalty" },
     { label: "EntryLogs", icon: <SyncAltIcon />, path: "/EntryLogs" },
   ];
@@ -186,7 +186,7 @@ const App = ({ darkMode, toggleTheme }) => {
           <Route path="/studentList" element={user ? <StudentList /> : <Login />} />      
           <Route path="/categories" element={user ? <CollectionForm collectionName="categories" /> : <Login />} />
           <Route path="/books" element={user ? <BookList /> : <Login />} />
-          <Route path="/bookissued" element={user ? <BookIssue /> : <Login />} />
+          <Route path="/BookBorrow" element={user ? <BookBorrow /> : <Login />} />
           <Route path="/Penalty" element={user ? <Penalty /> : <Login />} />
           <Route path="/EntryLogs" element={user ? <EntryLogs /> : <Login />} />
           <Route path="/Dashboard" element={user ? <Dashboard /> : <Login />} />

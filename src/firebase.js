@@ -2,7 +2,7 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import "firebase/compat/storage";
-
+import { Timestamp} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBvWeRTcluug1-W-Gx8sabzel0z7N2AGKg",
@@ -21,3 +21,4 @@ export const auth = firebase.auth();
 export const storage = firebase.storage(); // Export the 'storage' module
 
 export default firebase;
+export { Timestamp};

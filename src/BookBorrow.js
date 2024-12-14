@@ -156,13 +156,12 @@ const BookBorrow = () => {
               <TableCell align="left">Title</TableCell>
               <TableCell align="left">Branch</TableCell>
               <TableCell align="left">Department</TableCell>
-              {/* <TableCell align="left">Email</TableCell> */}
+              <TableCell align="left">Email</TableCell>
               <TableCell align="left">BorrowDate</TableCell>
               <TableCell align="left">Name</TableCell>
               <TableCell align="left">ReturnDate</TableCell>
               <TableCell align="left">User Status</TableCell>
               <TableCell align="left">USN</TableCell>
-              <TableCell align="left">penalty</TableCell>
               <TableCell align="left">Photo</TableCell>
             </TableRow>
           </TableHead>
@@ -175,13 +174,12 @@ const BookBorrow = () => {
                     <TableCell align="left">{book.bookTitle}</TableCell>
                     <TableCell align="left">{book.branch}</TableCell>
                     <TableCell align="left">{book.department}</TableCell>
-                    {/* <TableCell align="left">{book.email}</TableCell> */}
+                    <TableCell align="left">{book.email}</TableCell>
                     <TableCell align="left">{formatDate(book.borrowDate)}</TableCell>
                     <TableCell align="left">{book.name}</TableCell>
                     <TableCell align="left">{formatDate(book.returnDate)}</TableCell>
                     <TableCell align="left">{book.userStatus}</TableCell>
                     <TableCell align="left">{book.usn}</TableCell>
-                    <TableCell align="left">{book.penalty}</TableCell>
                     <TableCell align="left">                     
                       {book.photo ? (
                     <Button
