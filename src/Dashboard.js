@@ -27,17 +27,17 @@ const Dashboard = () => {
   //   booksIssued: 25,
   // });
 
-  const [usersOfTheWeek] = useState([
-    { id: 1, name: "John Doe", email: "john@example.com", booksIssued: 5, totalHoursSpent: 10 },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", booksIssued: 4, totalHoursSpent: 8 },
-    { id: 3, name: "Alice Johnson", email: "alice@example.com", booksIssued: 3, totalHoursSpent: 7 },
-    { id: 4, name: "Mark Brown", email: "mark@example.com", booksIssued: 2, totalHoursSpent: 5 },
-    { id: 5, name: "Emily Davis", email: "emily@example.com", booksIssued: 6, totalHoursSpent: 12 },
-    { id: 6, name: "Chris Wilson", email: "chris@example.com", booksIssued: 1, totalHoursSpent: 3 },
-    { id: 7, name: "Sophia Taylor", email: "sophia@example.com", booksIssued: 2, totalHoursSpent: 4 },
-    { id: 8, name: "David White", email: "david@example.com", booksIssued: 4, totalHoursSpent: 9 },
-    { id: 9, name: "Michael Scott", email: "michael@example.com", booksIssued: 3, totalHoursSpent: 6 },
-  ]);
+  // const [usersOfTheWeek] = useState([
+  //   { id: 1, name: "John Doe", email: "john@example.com", booksIssued: 5, totalHoursSpent: 10 },
+  //   { id: 2, name: "Jane Smith", email: "jane@example.com", booksIssued: 4, totalHoursSpent: 8 },
+  //   { id: 3, name: "Alice Johnson", email: "alice@example.com", booksIssued: 3, totalHoursSpent: 7 },
+  //   { id: 4, name: "Mark Brown", email: "mark@example.com", booksIssued: 2, totalHoursSpent: 5 },
+  //   { id: 5, name: "Emily Davis", email: "emily@example.com", booksIssued: 6, totalHoursSpent: 12 },
+  //   { id: 6, name: "Chris Wilson", email: "chris@example.com", booksIssued: 1, totalHoursSpent: 3 },
+  //   { id: 7, name: "Sophia Taylor", email: "sophia@example.com", booksIssued: 2, totalHoursSpent: 4 },
+  //   { id: 8, name: "David White", email: "david@example.com", booksIssued: 4, totalHoursSpent: 9 },
+  //   { id: 9, name: "Michael Scott", email: "michael@example.com", booksIssued: 3, totalHoursSpent: 6 },
+  // ]);
 
   // Pagination state
   const [page, setPage] = useState(0); // Current page
@@ -200,7 +200,7 @@ const Dashboard = () => {
                 <TableCell align="center">Total Hours Spend</TableCell>
               </TableRow>
             </TableHead>
-            <TableBody>
+            {/* <TableBody>
               {usersOfTheWeek
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((user) => (
@@ -211,12 +211,12 @@ const Dashboard = () => {
                     <TableCell align="center">{user.totalHoursSpent}</TableCell>
                   </TableRow>
                 ))}
-            </TableBody>
+            </TableBody> */}
           </Table>
           {/* Pagination */}
           <TablePagination
             component="div"
-            count={usersOfTheWeek.length}
+            // count={usersOfTheWeek.length}
             page={page}
             onPageChange={handlePageChange}
             rowsPerPage={rowsPerPage}
