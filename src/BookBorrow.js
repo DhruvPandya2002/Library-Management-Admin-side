@@ -132,7 +132,7 @@ const BookBorrow = () => {
   return (
     <Container maxWidth="lg" sx={{ marginTop: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Students/Faculty Logs
+        Book Borrowed
       </Typography>
       <Box
         display="flex"

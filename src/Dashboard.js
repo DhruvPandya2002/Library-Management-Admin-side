@@ -20,10 +20,12 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
 
 const Dashboard = () => {
   const [totalBooks, setTotalBooks] = useState(0); // State for total books
-  const [stats, setStats] = useState({
-    totalStudents: 75,
-    booksIssued: 25,
-  });
+  // const [totalBooks, setTotalBooks] = useState(0); // State for total books
+  const [TotalBooksissue, setTotalBooksissue] = useState(0); // State for total books
+  // const [stats, setStats] = useState({
+  //   totalStudents: 75,
+  //   booksIssued: 25,
+  // });
 
   const [usersOfTheWeek] = useState([
     { id: 1, name: "John Doe", email: "john@example.com", booksIssued: 5, totalHoursSpent: 10 },
@@ -50,6 +52,11 @@ const Dashboard = () => {
         const bookCollection = collection(db, "books"); // Replace "books" with the actual name of your Firestore collection
         const bookSnapshot = await getDocs(bookCollection);
         setTotalBooks(bookSnapshot.size); // Get the total count of documents
+
+        const bookissue = collection(db, "book-issues"); // Replace "books" with the actual name of your Firestore collection
+        const bookissueSnapshot = await getDocs(bookissue);
+        setTotalBooksissue(bookissueSnapshot.size); // Get the total count of documents
+
       } catch (error) {
         console.error("Error fetching total books:", error);
       }
@@ -74,9 +81,9 @@ const Dashboard = () => {
       <Typography variant="h4" gutterBottom>
         Dashboard
       </Typography>
-      <marquee width="100%" direction="left" height="100px">
+      {/* <marquee width="100%" direction="left" height="100px">
           This Project is Currently in Development Phase
-        </marquee>
+        </marquee> */}
       <Grid container spacing={3}>
         {/* Total Books */}
         <Grid item xs={12} sm={6} md={4}>
@@ -138,7 +145,7 @@ const Dashboard = () => {
                 Today Books Issued
               </Typography>
               <Typography variant="h4" sx={{ color: "#4CAF50" }}>
-                {stats.totalStudents}
+                {TotalBooksissue}
               </Typography>
             </Box>
           </Paper>
@@ -171,7 +178,7 @@ const Dashboard = () => {
                 Today Visitors
               </Typography>
               <Typography variant="h4" sx={{ color: "#9C27B0" }}>
-                {stats.booksIssued}
+              {TotalBooksissue}
               </Typography>
             </Box>
           </Paper>
